@@ -50,11 +50,25 @@ api-middleware-app
    ```
    npm install
    ```
+4. Run the setup script to create necessary directories and files:
+   ```
+   npm run setup
+   ```
+   This will create:
+   - `data/` directory for SQLite database files
+   - `logs/` directory for application logs
+   - `.env` file with default environment variables (if it doesn't exist)
+
+   **Note:** These directories and files are in `.gitignore` and won't be committed to version control. This ensures compatibility across different operating systems (Windows, Linux, macOS) and avoids permission issues.
 
 ## Usage
 To start the application, run:
 ```
 npm start
+```
+Or to run on a specific port:
+```
+PORT=3001 npm start
 ```
 This will initialize the server and set up the middleware and routes.
 

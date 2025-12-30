@@ -4,6 +4,7 @@
   "description": "A middleware application for handling API requests with authentication, logging, rate limiting, and error handling.",
   "main": "src/index.ts",
   "scripts": {
+    "setup": "node scripts/setup.js",
     "start": "ts-node src/index.ts",
     "test": "jest",
     "test:e2e": "ts-node scripts/testEndToEnd.ts",
