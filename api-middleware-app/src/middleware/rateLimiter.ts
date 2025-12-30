@@ -7,7 +7,7 @@ const requestCounts: { [key: string]: number } = {};
 const requestTimestamps: { [key: string]: number } = {};
 
 export const rateLimiter = (req: Request, res: Response, next: NextFunction) => {
-    const userIp = req.ip;
+    const userIp = req.ip || req.socket.remoteAddress || 'unknown';
 
     const currentTime = Date.now();
 

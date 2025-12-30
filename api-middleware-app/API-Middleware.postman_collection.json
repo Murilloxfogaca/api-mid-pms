@@ -1,0 +1,482 @@
+{
+	"info": {
+		"_postman_id": "api-middleware-collection",
+		"name": "API Middleware - PMS",
+		"description": "Collection for testing the API Middleware Application with authentication, proxy, and webhook endpoints",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:3000",
+			"type": "string"
+		},
+		{
+			"key": "access_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "refresh_token",
+			"value": "",
+			"type": "string"
+		},
+		{
+			"key": "client_id",
+			"value": "your_client_id",
+			"type": "string"
+		},
+		{
+			"key": "client_secret",
+			"value": "your_client_secret",
+			"type": "string"
+		}
+	],
+	"item": [
+		{
+			"name": "Health & Status",
+			"item": [
+				{
+					"name": "Health Check",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/health",
+							"host": ["{{base_url}}"],
+							"path": ["health"]
+						},
+						"description": "Check if the API is running and healthy"
+					},
+					"response": []
+				},
+				{
+					"name": "Example Data",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/example",
+							"host": ["{{base_url}}"],
+							"path": ["example"]
+						},
+						"description": "Get example data from the API"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Get Access Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('access_token', jsonData.access_token);",
+									"    pm.collectionVariables.set('refresh_token', jsonData.refresh_token);",
+									"    console.log('Access token saved:', jsonData.access_token);",
+									"    console.log('Refresh token saved:', jsonData.refresh_token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"client_id\": \"{{client_id}}\",\n  \"client_secret\": \"{{client_secret}}\",\n  \"grant_type\": \"client_credentials\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/token",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "token"]
+						},
+						"description": "Obtain access token using OAuth 2.0 Client Credentials flow"
+					},
+					"response": []
+				},
+				{
+					"name": "Refresh Token",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    const jsonData = pm.response.json();",
+									"    pm.collectionVariables.set('access_token', jsonData.access_token);",
+									"    pm.collectionVariables.set('refresh_token', jsonData.refresh_token);",
+									"    console.log('New access token saved:', jsonData.access_token);",
+									"    console.log('New refresh token saved:', jsonData.refresh_token);",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"refresh_token\": \"{{refresh_token}}\",\n  \"grant_type\": \"refresh_token\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/refresh",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "refresh"]
+						},
+						"description": "Refresh an expired access token"
+					},
+					"response": []
+				},
+				{
+					"name": "Revoke Token",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"{{access_token}}\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/revoke",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "revoke"]
+						},
+						"description": "Revoke an access token (logout)"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Proxy",
+			"item": [
+				{
+					"name": "List Integrations",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/proxy/integrations",
+							"host": ["{{base_url}}"],
+							"path": ["proxy", "integrations"]
+						},
+						"description": "List all available integrations (public endpoint)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Integration Status",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/proxy/:integration/status",
+							"host": ["{{base_url}}"],
+							"path": ["proxy", ":integration", "status"],
+							"variable": [
+								{
+									"key": "integration",
+									"value": "booking_engine",
+									"description": "Integration name (e.g., booking_engine, pms_system)"
+								}
+							]
+						},
+						"description": "Get integration connection status (requires authentication)"
+					},
+					"response": []
+				},
+				{
+					"name": "Proxy POST Request",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"value\",\n  \"data\": {}\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/proxy/:integration/:endpoint",
+							"host": ["{{base_url}}"],
+							"path": ["proxy", ":integration", ":endpoint"],
+							"variable": [
+								{
+									"key": "integration",
+									"value": "booking_engine",
+									"description": "Integration name"
+								},
+								{
+									"key": "endpoint",
+									"value": "reservations",
+									"description": "Target endpoint"
+								}
+							]
+						},
+						"description": "Forward POST request to integration endpoint with data transformation"
+					},
+					"response": []
+				},
+				{
+					"name": "Proxy GET Request",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/proxy/:integration/:endpoint",
+							"host": ["{{base_url}}"],
+							"path": ["proxy", ":integration", ":endpoint"],
+							"variable": [
+								{
+									"key": "integration",
+									"value": "booking_engine",
+									"description": "Integration name"
+								},
+								{
+									"key": "endpoint",
+									"value": "reservations",
+									"description": "Target endpoint"
+								}
+							]
+						},
+						"description": "Forward GET request to integration endpoint"
+					},
+					"response": []
+				},
+				{
+					"name": "Proxy PUT Request",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"value\",\n  \"data\": {}\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/proxy/:integration/:endpoint",
+							"host": ["{{base_url}}"],
+							"path": ["proxy", ":integration", ":endpoint"],
+							"variable": [
+								{
+									"key": "integration",
+									"value": "booking_engine",
+									"description": "Integration name"
+								},
+								{
+									"key": "endpoint",
+									"value": "reservations/123",
+									"description": "Target endpoint"
+								}
+							]
+						},
+						"description": "Forward PUT request to integration endpoint with data transformation"
+					},
+					"response": []
+				},
+				{
+					"name": "Proxy PATCH Request",
+					"request": {
+						"method": "PATCH",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							},
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"key\": \"value\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/proxy/:integration/:endpoint",
+							"host": ["{{base_url}}"],
+							"path": ["proxy", ":integration", ":endpoint"],
+							"variable": [
+								{
+									"key": "integration",
+									"value": "booking_engine",
+									"description": "Integration name"
+								},
+								{
+									"key": "endpoint",
+									"value": "reservations/123",
+									"description": "Target endpoint"
+								}
+							]
+						},
+						"description": "Forward PATCH request to integration endpoint"
+					},
+					"response": []
+				},
+				{
+					"name": "Proxy DELETE Request",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Authorization",
+								"value": "Bearer {{access_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/proxy/:integration/:endpoint",
+							"host": ["{{base_url}}"],
+							"path": ["proxy", ":integration", ":endpoint"],
+							"variable": [
+								{
+									"key": "integration",
+									"value": "booking_engine",
+									"description": "Integration name"
+								},
+								{
+									"key": "endpoint",
+									"value": "reservations/123",
+									"description": "Target endpoint"
+								}
+							]
+						},
+						"description": "Forward DELETE request to integration endpoint"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Webhooks",
+			"item": [
+				{
+					"name": "Receive Webhook",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Webhook-Signature",
+								"value": "signature_hash",
+								"description": "Webhook signature for validation"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"event\": \"reservation.created\",\n  \"data\": {\n    \"id\": \"123\",\n    \"guest_name\": \"John Doe\",\n    \"check_in\": \"2025-01-15\",\n    \"check_out\": \"2025-01-20\"\n  },\n  \"timestamp\": \"2025-12-30T10:00:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/webhooks/:integration",
+							"host": ["{{base_url}}"],
+							"path": ["webhooks", ":integration"],
+							"variable": [
+								{
+									"key": "integration",
+									"value": "booking_engine",
+									"description": "Integration name"
+								}
+							]
+						},
+						"description": "Generic webhook receiver for any integration"
+					},
+					"response": []
+				},
+				{
+					"name": "Receive Event-Specific Webhook",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "X-Webhook-Signature",
+								"value": "signature_hash",
+								"description": "Webhook signature for validation"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"data\": {\n    \"id\": \"123\",\n    \"guest_name\": \"John Doe\",\n    \"check_in\": \"2025-01-15\",\n    \"check_out\": \"2025-01-20\"\n  },\n  \"timestamp\": \"2025-12-30T10:00:00Z\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/webhooks/:integration/:event",
+							"host": ["{{base_url}}"],
+							"path": ["webhooks", ":integration", ":event"],
+							"variable": [
+								{
+									"key": "integration",
+									"value": "booking_engine",
+									"description": "Integration name"
+								},
+								{
+									"key": "event",
+									"value": "reservation.created",
+									"description": "Event type"
+								}
+							]
+						},
+						"description": "Event-specific webhook receiver"
+					},
+					"response": []
+				}
+			]
+		}
+	]
+}
