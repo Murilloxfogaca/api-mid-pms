@@ -8,6 +8,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { execSync } = require('child_process');
 
 // Directories to create
 const directories = [
@@ -51,4 +52,18 @@ Object.entries(files).forEach(([filename, content]) => {
     }
 });
 
-console.log('\n✨ Setup complete! You can now run: npm start\n');
+// Initialize database
+console.log('\n📊 Initializing database...\n');
+try {
+    execSync('npx ts-node scripts/initDatabase.ts', { stdio: 'inherit' });
+} catch (error) {
+    console.error('\n⚠️  Database initialization failed. You may need to run it manually:');
+    console.error('   npx ts-node scripts/initDatabase.ts\n');
+}
+
+console.log('\n✨ Setup complete!\n');
+console.log('Next steps:');
+console.log('  1. Create an OAuth client:');
+console.log('     npx ts-node scripts/createClient.ts <client_id> <secret> <name>');
+console.log('  2. Start the server:');
+console.log('     npm start\n');
